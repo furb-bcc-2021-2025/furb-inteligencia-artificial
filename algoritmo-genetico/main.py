@@ -1,6 +1,7 @@
 import math
 import random
 
+import matplotlib.pyplot as plt
 import numpy as np
 
 
@@ -149,8 +150,33 @@ def realizar_mutacao_filhos(filhos):
     return filhos
 
 
+def ordenar_cromossomos_pelo_custo_total(cromossomos):
+    return sorted(cromossomos, key=lambda cromossomo: cromossomo.custo_total)  # crescente
+
+
+def exibir_cromossomos(cromossomos):
+    for i in range(len(cromossomos)):
+        cromossomo = cromossomos[i]
+        print(f'#{str(i+1).zfill(2)} cromossomo - cidades: {[c.identificador for c in cromossomo.cidades]} - custo total: {cromossomo.custo_total}')
+
+
+def exibir_cidades_interligadas_pelo_melhor_caminho(cidades, cidades_melhor_caminho):
+    eixo_x = [cidade.x for cidade in cidades]
+    eixo_y = [cidade.y for cidade in cidades]
+
+    melhor_caminho_x = [cidade.x for cidade in cidades_melhor_caminho]
+    melhor_caminho_y = [cidade.y for cidade in cidades_melhor_caminho]
+
+    plt.plot(eixo_x, eixo_y, marker='o', color='r', ls='')
+    plt.plot(melhor_caminho_x, melhor_caminho_y)
+    plt.xlabel('eixo x')
+    plt.ylabel('eixo y')
+    plt.title('Coordenadas das cidades interligadas pelo melhor caminho encontrado')
+    plt.show()
+
+
 if __name__ == '__main__':
-    print('inicio')
+    print('\nInicio da execução\n')
 
     # carregar dados do enunciado
     data = np.loadtxt('cidades.mat')
@@ -162,17 +188,17 @@ if __name__ == '__main__':
     matriz_distancias = MatrizDistancias(cidades)
 
     # gerar cromossomos iniciais
-    cromossomos = gerar_cromossomos_iniciais(cidades, matriz_distancias)
+    cromossomos_iniciais = gerar_cromossomos_iniciais(cidades, matriz_distancias)
+    cromossomos = cromossomos_iniciais.copy()
 
     # executar 10000 vezes
     for i in range(10000):
 
         if i % 1000 == 0:
-            print(f'Executando {str(i)} gerações')
+            print(f'- Executando {str(i)} gerações')
 
         # ordenar cromossomos pelo custo total
-        cromossomos = sorted(cromossomos, key=lambda cromossomo: cromossomo.custo_total)  # crescente
-        # cromossomos = sorted(cromossomos, key=lambda cromossomo: cromossomo.custo_total, reverse=True)  # decrescente
+        cromossomos = ordenar_cromossomos_pelo_custo_total(cromossomos)
 
         # eliminar os 10 piores cromossomos
         cromossomos = cromossomos[:len(cromossomos) // 2]
@@ -192,10 +218,19 @@ if __name__ == '__main__':
         # inserir filhos na lista de cromossomos
         cromossomos.extend(filhos)
 
-    print('fim')
+    print('\nFim da execução')
 
-    print('resultado')
+    print('\nResultados')
 
-    for i in range(len(cromossomos)):
-        cromossomo = cromossomos[i]
-        print(f'#{str(i+1)} cromossomo - cidades: {[c.identificador for c in cromossomo.cidades]} - custo total: {cromossomo.custo_total}')
+    print(f'\nPopulação inicial - tamanho: {len(cromossomos_iniciais)}\n')
+
+    cromossomos_iniciais = ordenar_cromossomos_pelo_custo_total(cromossomos_iniciais)
+    exibir_cromossomos(cromossomos_iniciais)
+
+    print(f'\nPopulação final - tamanho: {len(cromossomos)}\n')
+
+    cromossomos = ordenar_cromossomos_pelo_custo_total(cromossomos)
+    exibir_cromossomos(cromossomos)
+
+    exibir_cidades_interligadas_pelo_melhor_caminho(cidades, cromossomos[0].cidades)
+
